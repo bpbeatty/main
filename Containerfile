@@ -16,7 +16,7 @@ COPY github-release-install.sh \
      packages.json \
         /tmp/
 
-COPY --from=ghcr.io/ublue-os/config:latest /rpms /tmp/rpms
+COPY --from=ghcr.io/bpbeatty/config:latest /rpms /tmp/rpms
 COPY --from=ghcr.io/ublue-os/akmods:main-${FEDORA_MAJOR_VERSION} /rpms/ublue-os /tmp/rpms
 
 RUN wget https://copr.fedorainfracloud.org/coprs/ublue-os/staging/repo/fedora-$(rpm -E %fedora)/ublue-os-staging-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_ublue-os_staging.repo && \

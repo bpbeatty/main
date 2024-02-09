@@ -55,9 +55,6 @@ jobs:
           - build_target: kmods
             major_version: 39
     steps:
-      - name: Maximize build space
-        uses: ublue-os/remove-unwanted-software@v6
-
       # Checkout push-to-registry action GitHub repository
       - name: Checkout Push to Registry action
         uses: actions/checkout@v4
@@ -150,8 +147,14 @@ jobs:
 
       - name: Get current version
         id: labels
+        shell: bash
         run: |
+          set -eo pipefail
           ver=$(skopeo inspect docker://quay.io/${{ env.SOURCE_ORG }}/${{ env.SOURCE_IMAGE }}:${{ matrix.major_version }} | jq -r '.Labels["org.opencontainers.image.version"]')
+          if [ -z "$ver" ] || [ "null" = "$ver" ]; then
+            echo "inspected image version must not be empty or null"
+            exit 1
+          fi
           echo "VERSION=$ver" >> $GITHUB_OUTPUT
 
       # Generate image metadata
@@ -183,6 +186,7 @@ jobs:
             SOURCE_ORG=${{ env.SOURCE_ORG }}
             SOURCE_IMAGE=${{ env.SOURCE_IMAGE }}
             FEDORA_MAJOR_VERSION=${{ matrix.major_version }}
+            RPMFUSION_MIRROR=${{ vars.RPMFUSION_MIRROR }}
           labels: ${{ steps.meta.outputs.labels }}
           oci: false
           extra-args: |
@@ -221,7 +225,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # Sign container
-      - uses: sigstore/cosign-installer@v3.3.0
+      - uses: sigstore/cosign-installer@v3.4.0
         if: github.event_name != 'pull_request'
 
       - name: Sign container image

@@ -21,16 +21,15 @@ COPY --from=ghcr.io/bpbeatty/config:latest /rpms /tmp/rpms
 COPY --from=ghcr.io/ublue-os/akmods:main-${FEDORA_MAJOR_VERSION} /rpms/ublue-os /tmp/rpms
 COPY sys_files/usr /usr
 
-RUN wget https://copr.fedorainfracloud.org/coprs/ublue-os/staging/repo/fedora-$(rpm -E %fedora)/ublue-os-staging-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_ublue-os_staging.repo && \
-    wget https://copr.fedorainfracloud.org/coprs/kylegospo/oversteer/repo/fedora-$(rpm -E %fedora)/kylegospo-oversteer-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_kylegospo_oversteer.repo && \
+RUN mkdir -p /var/lib/alternatives && \
     /tmp/install.sh && \
     /tmp/post-install.sh && \
-    rm -f /etc/yum.repos.d/_copr_ublue-os_staging.repo && \
-    rm -f /etc/yum.repos.d/_copr_kylegospo_oversteer.repo && \
+    mv /var/lib/alternatives /staged-alternatives && \
     rm -rf /tmp/* /var/* && \
-    if [[ "$IMAGE_NAME" == "base" ]]; then systemctl enable getty@tty1; fi && \
     ostree container commit && \
-    mkdir -p /var/tmp && chmod -R 1777 /var/tmp
+    mkdir -p /var/lib && mv /staged-alternatives /var/lib/alternatives && \
+    mkdir -p /tmp /var/tmp && \
+    chmod -R 1777 /tmp /var/tmp
 
 
 # !!! WARNING - KMODS IN MAIN IMAGES ARE DEPRECATED !!!

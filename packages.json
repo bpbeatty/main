@@ -6,6 +6,7 @@
                 "android-udev-rules",
                 "apr",
                 "apr-util",
+                "bootc",
                 "distrobox",
                 "ffmpeg",
                 "ffmpeg-libs",
@@ -38,6 +39,7 @@
                 "pam_yubico",
                 "pamu2fcfg",
                 "pipewire-codec-aptx",
+                "powerstat",
                 "smartmontools",
                 "solaar-udev",
                 "symlinks",
@@ -192,9 +194,7 @@
     },
     "39": {
         "include": {
-            "all": [
-                "bootc"
-            ],
+            "all": [],
             "kinoite": [
                 "xwaylandvideobridge"
             ]

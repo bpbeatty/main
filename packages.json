@@ -10,6 +10,7 @@
                 "ffmpeg",
                 "ffmpeg-libs",
                 "ffmpegthumbnailer",
+                "flatpak-spawn",
                 "fzf",
                 "google-noto-sans-balinese-fonts",
                 "google-noto-sans-cjk-fonts",
@@ -210,7 +211,10 @@
     "40": {
         "include": {
             "all": [],
-            "kinoite": []
+            "kinoite": [
+                "kf6-kimageformats",
+		"qt6-qtimageformats"
+            ]
         },
         "exclude": {
             "all": [

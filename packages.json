@@ -20,20 +20,16 @@
                 "grub2-tools-extra",
                 "heif-pixbuf-loader",
                 "htop",
-                "intel-media-driver",
                 "just",
                 "kernel-tools",
                 "libcamera",
                 "libcamera-tools",
                 "libcamera-gstreamer",
                 "libcamera-ipa",
-                "libheif-freeworld",
-                "libheif-tools",
+                "libfdk-aac",
                 "libratbag-ratbagd",
-                "libva-intel-driver",
                 "libva-utils",
                 "lshw",
-                "mesa-va-drivers-freeworld.x86_64",
                 "net-tools",
                 "nvme-cli",
                 "nvtop",
@@ -43,7 +39,6 @@
                 "pam-u2f",
                 "pam_yubico",
                 "pamu2fcfg",
-                "pipewire-codec-aptx",
                 "pipewire-plugin-libcamera",
                 "powerstat",
                 "smartmontools",
@@ -85,6 +80,7 @@
         },
         "exclude": {
             "all": [
+                "fdk-aac-free",
                 "ffmpeg-free",
                 "google-noto-sans-cjk-vf-fonts",
                 "libavcodec-free",
@@ -95,7 +91,7 @@
                 "libpostproc-free",
                 "libswresample-free",
                 "libswscale-free",
-                "mesa-va-drivers"
+                "default-fonts-cjk-sans"
             ],
             "kinoite": [
                 "ffmpegthumbnailer",
@@ -110,30 +106,40 @@
     "39": {
         "include": {
             "all": [
-                "bootc"
+                "bootc",
+                "intel-vaapi-driver",
+                "pipewire-libs-extra"
             ],
             "kinoite": [
                 "xwaylandvideobridge"
             ]
         },
         "exclude": {
-            "all": [
-                "default-fonts-cjk-sans"
-            ]
+            "all": []
         }
     },
     "40": {
         "include": {
-            "all": [],
+            "all": [
+                "intel-vaapi-driver",
+                "pipewire-libs-extra"
+            ],
             "kinoite": [
                 "kf6-kimageformats",
                 "qt6-qtimageformats"
             ]
         },
         "exclude": {
-            "all": [
-                "default-fonts-cjk-sans"
-            ]
+            "all": []
+        }
+    },
+    "41": {
+        "include": {
+            "all": [],
+            "kinoite": []
+        },
+        "exclude": {
+            "all": []
         }
     }
 }

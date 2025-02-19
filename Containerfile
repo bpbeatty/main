@@ -5,11 +5,10 @@ ARG BASE_IMAGE="quay.io/${SOURCE_ORG}/${SOURCE_IMAGE}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 ARG KERNEL_VERSION="${KERNEL_VERSION:-6.9.7-200.fc40.x86_64}"
 ARG IMAGE_REGISTRY=ghcr.io/bpbeatty
-ARG IMAGE_REGISTRY_AKMODS=ghcr.io/ublue-os
+ARG IMAGE_REGISTRY_SRC=ghcr.io/ublue-os
 
 FROM ${IMAGE_REGISTRY}/config:latest AS config
-FROM ${IMAGE_REGISTRY_AKMODS}/akmods:main-${FEDORA_MAJOR_VERSION} AS akmods
-FROM ${IMAGE_REGISTRY_AKMODS}/main-kernel:${KERNEL_VERSION} AS kernel
+FROM ${IMAGE_REGISTRY_SRC}/akmods:main-${FEDORA_MAJOR_VERSION} AS akmods
 
 FROM scratch AS ctx
 COPY / /
@@ -26,7 +25,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --mount=type=bind,from=ctx,src=/,dst=/ctx \
     --mount=type=bind,from=config,src=/rpms,dst=/tmp/rpms \
     --mount=type=bind,from=akmods,src=/rpms/ublue-os,dst=/tmp/akmods-rpms \
-    --mount=type=bind,from=kernel,src=/tmp/rpms,dst=/tmp/kernel-rpms \
+    --mount=type=bind,from=akmods,src=/kernel-rpms,dst=/tmp/kernel-rpms \
     rm -f /usr/bin/chsh && \
     rm -f /usr/bin/lchsh && \
     mkdir -p /var/lib/alternatives && \

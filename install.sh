@@ -15,13 +15,20 @@ rpm-ostree override replace \
   ocl-icd \
   || true
 
+curl -Lo /etc/yum.repos.d/_copr_ublue-os_packages.repo https://copr.fedorainfracloud.org/coprs/ublue-os/packages/repo/fedora-"${RELEASE}"/ublue-os-packages-fedora-"${RELEASE}".repo
 curl -Lo /etc/yum.repos.d/_copr_ublue-os_staging.repo https://copr.fedorainfracloud.org/coprs/ublue-os/staging/repo/fedora-"${RELEASE}"/ublue-os-staging-fedora-"${RELEASE}".repo
 curl -Lo /etc/yum.repos.d/_copr_kylegospo_oversteer.repo https://copr.fedorainfracloud.org/coprs/kylegospo/oversteer/repo/fedora-"${RELEASE}"/kylegospo-oversteer-fedora-"${RELEASE}".repo
 
 rpm-ostree install \
-    /tmp/rpms/*.rpm \
+    /tmp/rpms/bpbeatty-*.rpm \
+    ublue-os-just \
+    ublue-os-luks \
+    ublue-os-udev-rules \
+    ublue-os-update-services \
     /tmp/akmods-rpms/*.rpm \
     fedora-repos-archive
+
+mv /usr/etc/containers/policy.json /etc/containers/policy.json
 
 # Handle Kernel Skew with override replace
 if [[ "${KERNEL_VERSION}" == "${QUALIFIED_KERNEL}" ]]; then
@@ -44,28 +51,43 @@ fi
 curl -Lo /etc/yum.repos.d/negativo17-fedora-multimedia.repo https://negativo17.org/repos/fedora-multimedia.repo
 sed -i '0,/enabled=1/{s/enabled=1/enabled=1\npriority=90/}' /etc/yum.repos.d/negativo17-fedora-multimedia.repo
 
-# use override to replace mesa and others with less crippled versions
-rpm-ostree override replace \
-  --experimental \
-  --from repo='fedora-multimedia' \
-    libheif \
-    libva \
-    libva-intel-media-driver \
-    mesa-dri-drivers \
-    mesa-filesystem \
-    mesa-libEGL \
-    mesa-libGL \
-    mesa-libgbm \
-    mesa-libglapi \
-    mesa-libxatracker \
-    mesa-va-drivers \
-    mesa-vulkan-drivers
-
-if [[ "$FEDORA_MAJOR_VERSION" -ne "41" ]]; then
+if [[ "$FEDORA_MAJOR_VERSION" -le "40" ]]; then
+    # use override to replace mesa and others with less crippled versions
     rpm-ostree override replace \
-        --experimental \
-        --from repo='fedora-multimedia' \
+      --experimental \
+      --from repo='fedora-multimedia' \
+        libheif \
+        libva \
+        libva-intel-media-driver \
+        mesa-dri-drivers \
+        mesa-filesystem \
+        mesa-libEGL \
+        mesa-libglapi \
+        mesa-libGL \
+        mesa-libgbm \
+        mesa-libxatracker \
+        mesa-va-drivers \
+        mesa-vulkan-drivers \
         libvdpau
+fi
+
+if [[ "$FEDORA_MAJOR_VERSION" -ge "41" ]]; then
+    # use override to replace mesa and others with less crippled versions
+    rpm-ostree override replace \
+      --experimental \
+      --from repo='fedora-multimedia' \
+      --remove=mesa-libglapi \
+        libheif \
+        libva \
+        libva-intel-media-driver \
+        mesa-dri-drivers \
+        mesa-filesystem \
+        mesa-libEGL \
+        mesa-libGL \
+        mesa-libgbm \
+        mesa-libxatracker \
+        mesa-va-drivers \
+        mesa-vulkan-drivers
 fi
 
 # Disable DKMS support in gnome-software

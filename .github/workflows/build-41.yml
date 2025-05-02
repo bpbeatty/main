@@ -3,8 +3,6 @@ name: ublue main 41
 on:
   pull_request:
   merge_group:
-  schedule:
-    - cron: '5 4 * * *'  # 4am-ish UTC everyday (timed against official fedora container pushes)
   workflow_dispatch:
 
 concurrency:
@@ -27,6 +25,9 @@ jobs:
           - onyx
           - lazurite
           - vauxite
+        image_variant:
+          - main
+          - nvidia
         include:
           - image_name: base
             source_image_name: base-atomic
@@ -40,5 +41,6 @@ jobs:
             source_image_name: xfce-atomic
     with:
       image_name: ${{ matrix.image_name }}
+      image_variant: ${{ matrix.image_variant }}
       source_image_name: ${{ matrix.source_image_name }}
       fedora_version: 41

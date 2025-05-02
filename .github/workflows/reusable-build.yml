@@ -10,6 +10,11 @@ on:
         description: The name of the image to build.  E.G. base, silverblue
         required: true
         type: string
+      image_variant:
+        description: The variant of image to build.  E.G. main, nvidia
+        required: false
+        type: string
+        default: "main"
       source_image_name:
         description: The name of the image to use as a source.  E.G. sway-atomic
         required: false
@@ -45,7 +50,7 @@ jobs:
           fi
 
           echo "SOURCE_ORG=fedora-ostree-desktops" >> $GITHUB_ENV
-          echo "IMAGE_NAME=$IMAGE_NAME-main" >> $GITHUB_ENV
+          echo "IMAGE_NAME=$IMAGE_NAME-${{ inputs.image_variant }}" >> $GITHUB_ENV
           echo "SOURCE_IMAGE=$SOURCE_IMAGE" >> $GITHUB_ENV
 
       - name: Generate tags
@@ -137,12 +142,19 @@ jobs:
             exit 1
           fi
 
+          AKMODS_NVIDIA_DIGEST=$(yq -r ".images[] | select(.name == \"akmods-nvidia-open-${VERSION}\") | .digest" "$IMAGE_VERSIONS_FILE")
+          if [ -z "$AKMODS_NVIDIA_DIGEST" ]; then
+            echo "AKMODS_NVIDIA_DIGEST not found in image-versions.yaml"
+            exit 1
+          fi
+
           BASE_IMAGE_DIGEST=$(yq -r ".images[] | select(.name == \"${SOURCE_IMAGE}-${VERSION}\") | .digest" "$IMAGE_VERSIONS_FILE")
           if [ -z "$BASE_IMAGE_DIGEST" ]; then
             echo "BASE_IMAGE_DIGEST not found in image-versions.yaml"
             exit 1
           fi
           echo "AKMODS_DIGEST=${AKMODS_DIGEST}" >> $GITHUB_OUTPUT
+          echo "AKMODS_NVIDIA_DIGEST=${AKMODS_NVIDIA_DIGEST}" >> $GITHUB_OUTPUT
           echo "BASE_IMAGE_DIGEST=${BASE_IMAGE_DIGEST}" >> $GITHUB_OUTPUT
 
       - name: Get current version
@@ -153,12 +165,12 @@ jobs:
           attempt_delay: 15000
           command: |
             set -eo pipefail
-            ver=$(skopeo inspect docker://quay.io/${{ env.SOURCE_ORG }}/${{ env.SOURCE_IMAGE }}:${{ inputs.fedora_version }} | jq -r '.Labels["org.opencontainers.image.version"]')
+            ver=$(skopeo inspect docker://quay.io/${{ env.SOURCE_ORG }}/${{ env.SOURCE_IMAGE }}@${{ steps.query-digest.outputs.BASE_IMAGE_DIGEST }} | jq -r '.Labels["org.opencontainers.image.version"]')
             if [ -z "$ver" ] || [ "null" = "$ver" ]; then
               echo "inspected image version must not be empty or null"
               exit 1
             fi
-            linux=$(skopeo inspect docker://${{ env.IMAGE_REGISTRY_SRC }}/akmods:main-${{ inputs.fedora_version }} | jq -r '.Labels["ostree.linux"]')
+            linux=$(skopeo inspect docker://${{ env.IMAGE_REGISTRY_SRC }}/akmods@${{ steps.query-digest.outputs.AKMODS_DIGEST }} | jq -r '.Labels["ostree.linux"]')
             echo "KERNEL_VERSION=$linux" >> $GITHUB_ENV
             echo "SOURCE_IMAGE_VERSION=$ver" >> $GITHUB_ENV
 
@@ -170,8 +182,8 @@ jobs:
           command: |
             # pull the base image used for FROM in containerfile so
             # we can retry on that unfortunately common failure case
-            podman pull quay.io/${{ env.SOURCE_ORG }}/${{ env.SOURCE_IMAGE }}:${{ inputs.fedora_version }}
-            podman pull ${{ env.IMAGE_REGISTRY_SRC }}/akmods:main-${{ inputs.fedora_version }}
+            podman pull quay.io/${{ env.SOURCE_ORG }}/${{ env.SOURCE_IMAGE }}:${{ inputs.fedora_version }}@${{ steps.query-digest.outputs.BASE_IMAGE_DIGEST }}
+            podman pull ${{ env.IMAGE_REGISTRY_SRC }}/akmods:main-${{ inputs.fedora_version }}@${{ steps.query-digest.outputs.AKMODS_DIGEST }}
 
       # Generate image metadata
       - name: Image Metadata
@@ -207,6 +219,7 @@ jobs:
             IMAGE_REGISTRY=${{ env.IMAGE_REGISTRY }}
             BASE_IMAGE_DIGEST=${{ steps.query-digest.outputs.BASE_IMAGE_DIGEST }}
             AKMODS_DIGEST=${{ steps.query-digest.outputs.AKMODS_DIGEST }}
+            BUILD_NVIDIA=${{ inputs.image_variant == 'nvidia' && 'Y' || 'N' }}
           labels: ${{ steps.meta.outputs.labels }}
           oci: false
 
@@ -266,7 +279,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # Sign container
-      - uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a # v3.8.1
+      - uses: sigstore/cosign-installer@3454372f43399081ed03b604cb2d021dabca52bb # v3.8.2
         if: github.event_name != 'pull_request'
 
       - name: Sign container image

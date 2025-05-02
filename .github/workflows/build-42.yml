@@ -3,8 +3,6 @@ name: ublue main 42
 on:
   pull_request:
   merge_group:
-  schedule:
-    - cron: '5 4 * * *'  # 4am-ish UTC everyday (timed against official fedora container pushes)
   workflow_dispatch:
 
 concurrency:
@@ -26,10 +24,14 @@ jobs:
           - sway-atomic
           - budgie-atomic
           - cosmic-atomic
+        image_variant:
+          - main
+          - nvidia
         include:
           - image_name: base
             source_image_name: base-atomic
     with:
       image_name: ${{ matrix.image_name }}
+      image_variant: ${{ matrix.image_variant }}
       source_image_name: ${{ matrix.source_image_name }}
       fedora_version: 42

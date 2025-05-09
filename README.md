@@ -1,7 +1,7 @@
 # Main
 
-[![build-41](https://github.com/bpbeatty/main/actions/workflows/build-41.yml/badge.svg)](https://github.com/bpbeatty/main/actions/workflows/build-41.yml)
-[![build-42](https://github.com/bpbeatty/main/actions/workflows/build-42.yml/badge.svg)](https://github.com/bpbeatty/main/actions/workflows/build-42.yml)
+[![gts](https://github.com/bpbeatty/main/actions/workflows/build-gts.yml/badge.svg)](https://github.com/bpbeatty/main/actions/workflows/build-gts.yml)
+[![latest](https://github.com/bpbeatty/main/actions/workflows/build-latest.yml/badge.svg)](https://github.com/bpbeatty/main/actions/workflows/build-latest.yml)
 
 A common main image for all other uBlue images, with minimal (but important) adjustments to Fedora. <3
 

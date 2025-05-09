@@ -1,0 +1,35 @@
+name: ublue gts
+
+on:
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build
+    uses: ./.github/workflows/reusable-build.yml
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        # TODO: Change to new names when GTS = F42
+        image_name:
+          - base
+          - silverblue
+          # - kinoite
+          # - sericea
+          # - onyx
+          # - lazurite
+          # - vauxite
+        image_variant:
+          - main
+          - nvidia
+    with:
+      image_name: ${{ matrix.image_name }}
+      image_variant: ${{ matrix.image_variant }}
+      image_version: 41
